@@ -336,19 +336,21 @@ def collate_precomputed(batch):
         "clean": clean
     }
 
-def prep_data_precomputed(file_name, batch_size=16):
+def prep_data_precomputed(file_path, batch_size=16):
     """
+    Get pre-computed dataloaders. Intended for Google Colab, but compatible locally.
     Pre-computed Dataloader already includes all necessary config info,
     no need to specify once more.
     """
     try:
         from google.colab import drive
         drive.mount('/content/drive')  # Mount Google Drive
-        path = f"/content/drive/MyDrive/Colab Notebooks/{file_name}"
+        path = f"{file_path}"
+        # full path required: e.g. path = "/content/drive/MyDrive/Colab Notebooks/YOUR DATA.pt"
         data = torch.load(path, map_location="cpu")
     except Exception as e:
-        print('Not running in Colab, please switch to local data prep instead!')
-        return
+        print('Not running in Colab, switching to local data prep instead...')
+        data = torch.load(f"{file_path}", map_location="cpu")
 
     train_set = PrecomputedSen2MTC(data["train"])
     val_set = PrecomputedSen2MTC(data["val"])
@@ -363,4 +365,5 @@ def prep_data_precomputed(file_name, batch_size=16):
     test_loader = DataLoader(test_set, batch_size=batch_size,
                              shuffle=False, collate_fn=collate_precomputed)
 
+    print('Pre-computed Dataloaders loaded successfully.')
     return train_loader, val_loader, test_loader

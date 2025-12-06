@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import torch
 
 def edm_preconditioning(sigma, sigma_data=1.0):
     """
@@ -56,7 +57,7 @@ def visualize(cloudy_seq, batch, x0):
     plt.imshow(clean_vis)
     plt.axis("off")
     plt.subplot(1, 3, 3)
-    plt.title("DDIM Output")
+    plt.title("Removal Output")
     plt.imshow(x0_vis)
     plt.axis("off")
     plt.show()
