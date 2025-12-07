@@ -161,3 +161,86 @@ def evaluate_over_loader(
         summary[k + "_std"]  = vals.std(unbiased=True).item()  # sample std
 
     return all_metrics, summary
+
+@torch.no_grad()
+def evaluate_over_precomputed(
+    path,
+    batch_size=32,
+    max_val=1.0,
+    lpips_model=None,
+    device="cuda",
+):
+    """
+    Evaluate pre-computed predictions stored in a .pt file.
+
+    The file is expected to be a dict with:
+        - 'clean': (N, C, H, W) ground-truth images
+        - 'cloudy': (N, C, H, W) cloudy inputs (optional for metrics)
+        - 'pred': (N, C, H, W) model predictions / reconstructions
+
+    Parameters
+    ----------
+    path : str
+        Path to the .pt file.
+    batch_size : int
+        Number of samples per evaluation batch.
+    max_val : float
+        Dynamic range of the images (e.g. 1.0 or 65535.0).
+    lpips_model : torch.nn.Module or None
+        Pre-initialized LPIPS model (on `device`) if LPIPS is desired.
+    device : str or torch.device
+        Device to run evaluation on.
+
+    Returns
+    -------
+    all_metrics : list[dict]
+        One dict of metrics per batch.
+    summary : dict
+        Mean and std of each metric across the dataset.
+    """
+    # ---- load tensors ----
+    data = torch.load(path, map_location="cpu")
+    clean = data["clean"].to(device)    # (N, C, H, W)
+    pred  = data["pred"].to(device)     # (N, C, H, W)
+    cloudy = data.get("cloudy", None)
+    if cloudy is not None:
+        cloudy = cloudy.to(device)
+
+    N = clean.shape[0]
+
+    all_metrics = []
+    for start in tqdm(range(0, N, batch_size)):
+        end = min(start + batch_size, N)
+
+        clean_b = clean[start:end]
+        pred_b  = pred[start:end]
+        if cloudy is not None:
+            cloudy_b = cloudy[start:end]
+        else:
+            cloudy_b = None
+
+        # build a minimal "batch" dict compatible with evaluate_batch
+        batch = {"clean": clean_b}
+        if cloudy_b is not None:
+            # only if evaluate_batch knows about it; harmless otherwise
+            batch["cloudy"] = cloudy_b
+
+        # x0 is the reconstructed / de-clouded image tensor
+        m = evaluate_batch(
+            x0=pred_b,
+            batch=batch,
+            max_val=max_val,
+            lpips_model=lpips_model,
+            device=device,
+        )
+        all_metrics.append(m)
+
+    # ---- aggregate statistics ----
+    keys = all_metrics[0].keys()
+    summary = {}
+    for k in keys:
+        vals = torch.tensor([m[k] for m in all_metrics], dtype=torch.float32)
+        summary[k + "_mean"] = vals.mean().item()
+        summary[k + "_std"]  = vals.std(unbiased=True).item()
+
+    return all_metrics, summary

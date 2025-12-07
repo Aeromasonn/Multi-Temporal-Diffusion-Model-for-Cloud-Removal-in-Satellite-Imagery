@@ -29,19 +29,6 @@ def edm_preconditioning(sigma, sigma_data=1.0):
     return c_in, c_skip, c_out, c_noise
 
 def visualize(cloudy_seq, batch, x0):
-    def to_vis(img):
-        # Accepts (4,H,W) or (3,H,W);
-        # -> If (T,4,H,W) take mean over time
-        if img.ndim == 4:
-            img = img.mean(dim=0)
-        if img.ndim != 3:
-            raise ValueError(f"Expected 3 dims after squeeze, got {img.ndim}")
-        x = img[:3].detach().cpu().numpy()
-        x = x.transpose(1, 2, 0)  # (H,W,C)
-        x = x - x.min()
-        x = x / (x.max() + 1e-6)
-        return x
-
     i = 0
     cloudy_vis = to_vis(cloudy_seq[i])
     clean_vis = to_vis(batch["clean"][i])
@@ -61,6 +48,23 @@ def visualize(cloudy_seq, batch, x0):
     plt.imshow(x0_vis)
     plt.axis("off")
     plt.show()
+
+def to_vis(img):
+    # Accepts (4,H,W) or (3,H,W);
+    # -> If (T,4,H,W) take mean over time
+    if img.ndim == 4:
+        img = img.mean(dim=0)
+    if img.ndim != 3:
+        raise ValueError(f"Expected 3 dims after squeeze, got {img.ndim}")
+    x = img[:3].detach().cpu().numpy()
+    x = x.transpose(1, 2, 0)  # (H,W,C)
+    x = x - x.min()
+    x = x / (x.max() + 1e-6)
+    return x
+
+def inspect_one(vis):
+    plt.figure(figsize=(10, 4))
+    plt.imshow(vis)
 
 def count_params(module):
     return sum(p.numel() for p in module.parameters())

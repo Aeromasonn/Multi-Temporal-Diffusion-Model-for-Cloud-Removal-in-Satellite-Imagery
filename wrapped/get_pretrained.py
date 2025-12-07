@@ -24,7 +24,7 @@ def get_pretrained_small(device, cloud_enc_pth, denoiser_pth):
     forward_enc_count = count_params(forwarder)
     denoiser_count = count_params(denoiser)
     print('Pretrained small model loaded successfully.')
-    print(f"The model {cloud_enc_count + forward_enc_count + denoiser_count} parameters.")
+    print(f"The model has {cloud_enc_count + forward_enc_count + denoiser_count} parameters.")
 
     return cloud_encoder, forwarder, denoiser
 
@@ -51,6 +51,6 @@ def get_pretrained_large(device, cloud_enc_pth, denoiser_pth):
     forward_enc_count = count_params(forwarder)
     denoiser_count = count_params(denoiser)
     print('Pretrained large model loaded successfully.')
-    print(f"The model {cloud_enc_count+forward_enc_count+denoiser_count} parameters.")
+    print(f"The model has {cloud_enc_count+forward_enc_count+denoiser_count} parameters.")
 
     return cloud_encoder, forwarder, denoiser
