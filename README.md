@@ -11,7 +11,19 @@ Our program removes clouds from multi-temporal satellite imagery by combining te
 
 
 Quick Start:
-aaa
+After SETUP.md,
+Quick run (both pre-computed dataset & pretrained model):
+```
+jupyter lab Notebooks/Pipeline_final_via_pretrained.ipynb
+```
+To train locally from scratch, run:
+```
+jupyter lab Notebooks/Pipeline_final_local.ipynb
+```
+To evaluate pretrained performance, run:
+```
+jupyter lab Notebooks/Evaluation.ipynb
+```
 
 Video Links:
 https
