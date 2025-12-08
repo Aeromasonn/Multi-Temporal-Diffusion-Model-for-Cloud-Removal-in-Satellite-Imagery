@@ -164,7 +164,7 @@ def evaluate_over_loader(
 
 @torch.no_grad()
 def evaluate_over_precomputed(
-    path,
+    data,
     batch_size=32,
     max_val=1.0,
     lpips_model=None,
@@ -180,8 +180,7 @@ def evaluate_over_precomputed(
 
     Parameters
     ----------
-    path : str
-        Path to the .pt file.
+    data: dict data on precomputed results.
     batch_size : int
         Number of samples per evaluation batch.
     max_val : float
@@ -199,7 +198,6 @@ def evaluate_over_precomputed(
         Mean and std of each metric across the dataset.
     """
     # ---- load tensors ----
-    data = torch.load(path, map_location="cpu")
     clean = data["clean"].to(device)    # (N, C, H, W)
     pred  = data["pred"].to(device)     # (N, C, H, W)
     cloudy = data.get("cloudy", None)

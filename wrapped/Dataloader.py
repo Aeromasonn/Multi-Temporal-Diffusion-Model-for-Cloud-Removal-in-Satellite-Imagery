@@ -214,7 +214,7 @@ def compute_global_stats(dataset, batch_size=32):
     total_pixels = 0
 
     for batch in loader:
-        # use first cloudy view from the sequence: (B,T,C,H,W) -> (B,C,H,W)
+        # use first cloudy view from the sequence
         x = batch["cloudy_seq"][0].double()
         B, C, H, W = x.shape
 
