@@ -1,166 +1,131 @@
 This is the COMPSCI-372 Final Project of Sihan Yao & Yuxuan Huang.
-# **Downstream Task: Evaluating Cloud Removal Through DEM Height Estimation**
+# Downstream Task: Evaluating Cloud Removal via DEM Height Estimation
 
-## **1. Purpose of the Downstream Task**
+## 1. Goal
 
-The goal of this downstream experiment is **not** to train a new DEM model, but to answer a specific scientific question:
+The downstream DEM experiment is designed to answer one question:
 
-> **Does cloud removal performed by our diffusion model improve the accuracy of downstream geophysical estimation tasks?**
+> Does removing clouds with our multi-temporal diffusion model make **height estimation** from satellite images more accurate?
 
-Digital Elevation Model (DEM) prediction is a sensitive proxy task because it requires a clean, cloud-free reflectance profile.  
-If cloud removal is effective, a pretrained DEM-prediction model should produce **more accurate elevation estimates** when fed our cleaned RGB images compared to cloudy input.
+We use a **pretrained ImageToDEM U-Net** (Panagiotou et al., 2020) as a fixed evaluator.  
+It maps RGB tiles to DEM tiles, and we do **not** retrain it. Our diffusion model only changes the **input images**:
 
-Our results confirm this:  
-cloud removal reduces DEM estimation error by **≈ 94%**, demonstrating that diffusion-based restoration meaningfully benefits subsequent remote-sensing tasks.
+- **Baseline:** DEM predicted from *cloudy* RGB
+- **Ours:** DEM predicted from *cloud-removed* RGB
 
----
-
-# **2. Downstream Pipeline (What We Actually Do)**
-
-Each sample from CS372_Data contains a **128×128×4** patch:
-- **RGB** (for DEM estimation)
-- **NIR** (ignored because ImageToDEM requires 3-channel input)
-
-### **Processing Steps**
-1. **Drop NIR channel** → keep RGB (3×128×128)  
-2. **Normalize RGB to [-1, 1]** (required by pix2pix DEM generator)  
-3. **Feed into pretrained ImageToDEM model**  
-4. **Compare predicted DEM to ground truth using MAE**
-
-We evaluate two conditions:
-
-| Condition | Input | Purpose |
-|----------|-------|---------|
-| **Baseline** | Cloudy RGB | What happens when clouds are NOT removed |
-| **Ours** | Cleaned RGB (from diffusion model) | Measures improvement due to cloud removal |
+If our cloud removal is useful, the DEM errors should be lower in the second case.
 
 ---
 
-# **3. Relevant DEM Theory (ImageToDEM)**
+## 2. Pipeline
 
-The reference paper (*Panagiotou et al., Remote Sensing, 2020*) explains that:
+Each sample is a 4-channel patch of size 128×128×4:
 
-- DEM patches are normalized to **[-1,1]**, so the generator only learns **relative elevation structure**, not absolute terrain height.
-- The model predicts elevation through a mapping:
+- Channels 0–2: RGB
+- Channel 3: cloudiness or NIR (ignored by the DEM model)
 
-\[
-G: \mathbb{R}^{128 \times 128 \times 3} \rightarrow \mathbb{R}^{128 \times 128 \times 1}
-\]
+**Steps:**
 
-where output is:
+1. **Drop the 4th channel**  
+   We keep only RGB: shape becomes 3×128×128.
 
-\[
-\hat{D} = \tanh( F(\text{RGB}) )
-\]
+2. **Normalize RGB to [-1, 1]**  
+   This matches the normalization used by ImageToDEM’s pix2pix generator.
 
-Thus, the model infers:
-- ridge vs valley patterns  
-- relative changes in terrain  
-- local slopes  
+3. **Pass through pretrained generator**  
+   The generator outputs a 1-channel DEM tile (128×128×1).
 
-but cannot output **absolute elevation in meters** without global scene context  
-(as explained in the ImageToDEM paper’s discussion on height recovery limitations).
-
-This is important:  
-Our downstream test is **not** about absolute altitude — it evaluates how well cleaned imagery preserves terrain-related spectral structure.
+4. **Compare to ground-truth DEM with MAE**  
+   We compute the error separately for:
+   - cloudy input (baseline)
+   - cloud-removed input (ours)
 
 ---
 
-# **4. Evaluation Metrics**
+## 3. DEM Model and Height Interpretation
 
-We use **Mean Absolute Error (MAE)** between predicted and ground-truth DEM patches.
+In the ImageToDEM paper, DEM generation is modeled as a mapping  
 
-\[
-\text{MAE} = \frac{1}{HW} \sum_{i,j} \left| \hat{D}_{i,j} - D_{i,j} \right|
-\]
+- $G : X \to Y$,  
+  where $X$ is the space of RGB images and $Y$ is the space of DEMs. :contentReference[oaicite:0]{index=0}  
 
-We compute two values per dataset:
+The network output is **normalized**:
 
-1. **Baseline MAE** (cloudy → DEM)
-2. **Clean MAE** (cleaned → DEM)
+- Inputs and DEMs are scaled so that predicted heights lie in a fixed range (e.g. $[-1, 1]$), because training on unbounded heights would require unrealistic amounts of data. :contentReference[oaicite:1]{index=1}  
 
-Improvement from cloud removal is:
+To recover true heights in meters one would need the **true minimum and maximum altitude** $(H_{\min}, H_{\max})$ for each validation region and then apply a linear rescaling such as
 
-\[
-\text{Improvement} = 1 - \frac{\text{MAE}_{\text{clean}}}{\text{MAE}_{\text{cloudy}}}
-\]
+- $h_{\text{true}} \approx \frac{h_{\text{pred}} + 1}{2} \,(H_{\max} - H_{\min}) + H_{\min}$
 
----
+As the paper notes, without knowing $H_{\min}$ and $H_{\max}$ for each tile, the model can only provide **relative elevation structure**, not absolute height in meters. :contentReference[oaicite:2]{index=2}  
 
-# **5. Results: Cloud Removal Dramatically Improves DEM Prediction**
-
-### **Validation Set**
-- Cloudy → GT:  
-  \[
-  \text{MAE} = 0.215648
-  \]
-- Cleaned → GT:  
-  \[
-  \text{MAE} = 0.071100
-  \]
-
-### **Test Set**
-- Cloudy → GT:  
-  \[
-  \text{MAE} = 0.217131
-  \]
-- Cleaned → GT:  
-  \[
-  \text{MAE} = 0.074932
-  \]
+This is exactly the regime of our experiment:  
+we evaluate how well the cleaned images preserve *relative terrain geometry* as measured by a pretrained DEM network.
 
 ---
 
-# **6. Quantifying the Benefit (≈ 94% Reduction in Error)**
+## 4. Error Metrics and Improvement Formula
 
-Using the improvement formula:
+For a DEM tile of size $H \times W$ with prediction $\hat{D}$ and ground truth $D$:
 
-For test set:
+- Mean Absolute Error (MAE):  
+  $MAE = \frac{1}{HW} \sum_{i,j} \left| \hat{D}_{ij} - D_{ij} \right|$
 
-\[
-\text{Improvement} = 1 - \frac{0.074932}{0.217131}
-\approx 0.6549
-\]
+To quantify the benefit of cloud removal we use:
 
-This is **65.5% reduction** in pixel-wise DEM error.
+- Relative improvement (fractional error reduction):  
+  $Improvement = 1 - \dfrac{MAE_{clean}}{MAE_{cloudy}}$
 
-However, DEM error concentrates heavily in *cloud-covered areas*, where the original DEM generator fails completely.  
-When restricting evaluation to cloud-occluded regions (as done in earlier literature and class discussion), improvement exceeds:
+where
 
-\[
-\approx 94\%
-\]
-
-This follows because the cloudy baseline MAE spikes near cloud-covered zones, while cleaned images recover terrain structure there.
-
-Thus cloud removal:
-- restores underlying terrain geometry  
-- drastically improves the feature space the DEM generator relies on  
-- prevents DEM hallucinations caused by clouds  
-
-This strongly validates the usefulness of our diffusion model for **practical downstream applications**.
+- $MAE_{cloudy}$ is the error when the DEM model sees cloudy RGB  
+- $MAE_{clean}$ is the error when it sees cloud-removed RGB
 
 ---
 
-# **7. Interpretation**
+## 5. Results: Cloud Removal Improves DEM Prediction
 
-Our results demonstrate that:
+### Validation Set
 
-### **✔ Diffusion-based cloud removal significantly boosts downstream inference**  
-DEM prediction error drops by a factor of **3×** across the whole dataset and by **>10×** in cloud-affected pixels.
+- Cloudy → GT DEM (baseline):  
+  $MAE_{cloudy} = 0.215648$
+- Cloud-removed (ours) → GT DEM:  
+  $MAE_{clean} = 0.071100$
 
-### **✔ The improvement is explained by DEM theory**  
-DEM generators rely on fine-grained spectral structure.  
-Clouds destroy these cues; diffusion restoration reconstructs them.
+Relative improvement on validation:
 
-### **✔ The downstream task provides scientific justification**  
-Cloud-free images produced by our model are **not only prettier** —  
-they contain **substantive geophysical information** recoverable by downstream algorithms.
+- $Improvement_{val} = 1 - 0.071100 / 0.215648 \approx 0.6703$  
+  → about **67.0% error reduction**
 
 ---
 
-# **8. Summary (for inclusion in report)**
+### Test Set
 
-> **Our diffusion-based cloud removal model improves DEM height estimation accuracy by ~94% in cloud-affected regions and ~65% overall, demonstrating that cloud removal materially enhances downstream geospatial analysis.**
+- Cloudy → GT DEM (baseline):  
+  $MAE_{cloudy} = 0.217131$
+- Cloud-removed (ours) → GT DEM:  
+  $MAE_{clean} = 0.074932$
 
-This validates cloud removal as more than a visual enhancement task — it directly benefits real Earth-observation pipelines.
+Relative improvement on test:
+
+- $Improvement_{test} = 1 - 0.074932 / 0.217131 \approx 0.6549$  
+  → about **65.5% error reduction**
+
+---
+
+## 6. Interpretation
+
+1. **Clouds harm DEM estimation.**  
+   When the DEM model sees cloudy RGB, MAE is around 0.216–0.217.
+
+2. **Our cloud-removed images are much more informative.**  
+   When we feed the *same* DEM model our diffusion-cleaned RGB, the MAE drops to about 0.071–0.075.
+
+3. **Quantitatively, this is a large effect.**  
+   Around **67% error reduction on validation** and **65.5% on test**, using a DEM network that was never trained on our cleaned images.
+
+4. **This connects cloud removal to height estimation theory.**  
+   The DEM network only sees local spectral cues and outputs normalized relative heights. The fact that its relative height predictions improve so much after cloud removal shows that our diffusion model is restoring terrain-relevant information, not just making images look nicer.
+
+**Conclusion:**  
+Our multi-temporal diffusion model for cloud removal substantially improves downstream DEM height estimation, providing strong evidence that cloud-free reconstructions produced by our method are more useful for real remote-sensing workflows than the original cloudy imagery.
