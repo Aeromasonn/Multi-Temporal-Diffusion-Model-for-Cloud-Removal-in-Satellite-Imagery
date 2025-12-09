@@ -17,7 +17,7 @@ We evaluate DEM height-field consistency using MAE between DEM(clean → DEM) an
 Lower MAE indicates better terrain accuracy.  
 Improvement is computed as:
 
-$\text{Improvement} = 1 - \frac{\text{MAE}_{\text{pred→clean}}}{\text{MAE}_{\text{cloudy→clean}}}$
+$Improvement = 1 - MAE_{pred\_clean} / MAE_{cloudy\_clean}$
 
 **Downstream DEM Comparison Table**
 
