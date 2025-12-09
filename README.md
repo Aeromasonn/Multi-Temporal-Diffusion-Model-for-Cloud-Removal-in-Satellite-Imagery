@@ -30,13 +30,14 @@ jupyter lab Notebooks/Evaluation.ipynb
 ```
     ** Note that Evaluation.ipynb defaults to pretrained results data by Model.evaluation.evaluate_over_precomputed.
     ** Switch to Model.evaluation.evaluate_over_loader to perform localized evaluation process.
-To generate cloud-free predictions val/test loaders, run:
+To generate cloud-free predictions (save locally) from val/test loaders, run:
 ```
 jupyter lab Notebooks/Diffusion_Application_Final.ipynb
 ```
 
 **Video Links:**
-https
+Project Demo: https://duke.box.com/s/67l28qsn0eh12le9xz0jnwoyzgjydm90
+Technical Walkthrough: https://duke.box.com/s/yjo1uv6xioshwsz0r83wqm8uobbldsox
 
 
 **Evaluation:**
