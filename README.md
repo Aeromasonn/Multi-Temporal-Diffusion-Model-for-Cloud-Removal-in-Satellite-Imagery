@@ -57,11 +57,12 @@ Liu et al's (2025) comparison table on Sen2-MTC dataset shows:
 | PMAA           		| 18.369 	| 0.614  	| 0.392   	|
 | UnCRtainTS       		| 18.770 	| 0.631  	| 0.333   	|
 | Method           		| PSNR ↑ 	| SSIM ↑  	| LPIPS ↓ 	|
-| ---------------------	| ---------	| ---------	| --------	| ------- Diffusion-based Methods Start Here
+| ----------- Diffusion-based Methods Start Here ---------- | 
 | DDPM-CR 			    | 18.742 	| 0.614	    | 0.329	    |
 | DiffCR  				| 19.150 	| 0.671	    | 0.291 	|
-| EMRDM			        | 20.067 	| 0.709 	| 0.255 	| ------- Liu et al's (2025)
-| Ours				    | 22.695	| 0.888	    | 0.100	    | ------- MAE: 0.017
+| EMRDM	(Liu et al.)    | 20.067 	| 0.709 	| 0.255 	|
+| Ours				    | 22.695	| 0.888	    | 0.100	    | 
+| Ours                              ------- MAE: 0.017      |
 
 Our Encoder-Conditioned-Diffusion based cloud removal model outperforms ALL existing models in terms of the Sen2-MTC dataset.
 Due to computational resource limitations and time constraints, we are unable to train, fine-tune or test on other datasets.
