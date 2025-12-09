@@ -8,7 +8,7 @@ Clouds significantly hinder the visibility of terrestrial targets in satellite o
 
 
 What It Does:
-Our program removes clouds from multi-temporal satellite imagery by combining temporal feature extraction with a diffusion-based restoration process. Given three temporally adjacent cloudy observations of the same region, the system extracts spatial descriptors and latent temporal embeddings through a Cloud Encoder. A backward diffusion process is then performed, initializing from a noisy version of the first cloudy frame. At each denoising step, a cloud-conditioned UNet predicts the underlying clean signal by approximating the mean of the forward process. Through hundreds of iterative reverse-diffusion steps, the method reconstructs a cloud-free output image without requiring cloud masks typically needed by supervised cloud-removal pipelines. The framework supports inference, visualization, and evaluation through metrics such as MAE, PSNR, SSIM, and LPIPS. Trained on the Sen2-MTC dataset with ~13,700*4 samples (70% training, 30% val/test, patched into 4), the model demonstrates potential for lightweight (50M parameters for our larger model), generalizable cloud removal and downstream remote-sensing tasks.
+Our program removes clouds from multi-temporal satellite imagery by combining temporal feature extraction with a diffusion-based restoration process. Given three temporally adjacent cloudy observations of the same region, the system extracts spatial descriptors and latent temporal embeddings through a Cloud Encoder. A backward diffusion process is then performed, initializing from a noisy version of the first cloudy frame. At each denoising step, a cloud-conditioned UNet predicts the underlying clean signal by approximating the mean of the forward process. Through hundreds of iterative reverse-diffusion steps, the method reconstructs a cloud-free output image without requiring cloud masks typically needed by supervised cloud-removal pipelines. The framework supports inference, visualization, and evaluation through metrics such as MAE, PSNR, SSIM, and LPIPS. Trained on the Sen2-MTC dataset with ~13,700*4 samples (70% training, 30% val/test, patched into 4), the model demonstrates potential for lightweight (50M parameters for our larger model), generalizable cloud removal and downstream remote-censoring tasks.
 
 
 Quick Start:
@@ -24,6 +24,16 @@ jupyter lab Notebooks/Pipeline_final_local.ipynb
 To evaluate pretrained performance, run:
 ```
 jupyter lab Notebooks/Evaluation.ipynb
+```
+    ** Note that Evaluation.ipynb defaults to pretrained results data by Model.evaluation.evaluate_over_precomputed.
+    ** Switch to Model.evaluation.evaluate_over_loader to perform localized evaluation process.
+To generate cloud-free predictions val/test loaders, run:
+```
+jupyter lab Notebooks/Diffusion_Application_Final.ipynb
+```
+To test our downstream example, run
+```
+jupyter lab Downstream/Downstream_Task_Final.ipynb
 ```
 
 Video Links:
@@ -48,11 +58,12 @@ Liu et al's (2025) comparison table on Sen2-MTC dataset shows:
 | PMAA           		| 18.369 	| 0.614  	| 0.392   	|
 | UnCRtainTS       		| 18.770 	| 0.631  	| 0.333   	|
 | Method           		| PSNR ↑ 	| SSIM ↑  	| LPIPS ↓ 	|
-| ---------------------	| ---------	| ---------	| --------	| ------- Diffusion-based Methods Start Here
+| ----------- Diffusion-based Methods Start Here ---------- | 
 | DDPM-CR 			    | 18.742 	| 0.614	    | 0.329	    |
 | DiffCR  				| 19.150 	| 0.671	    | 0.291 	|
-| EMRDM			        | 20.067 	| 0.709 	| 0.255 	| ------- Liu et al's (2025)
-| Ours				    | 22.695	| 0.888	    | 0.100	    | ------- MAE: 0.017
+| EMRDM	(Liu et al.)    | 20.067 	| 0.709 	| 0.255 	|
+| Ours				    | 22.695	| 0.888	    | 0.100	    | 
+| Ours                              ------- MAE: 0.017      |
 
 Our Encoder-Conditioned-Diffusion based cloud removal model outperforms ALL existing models in terms of the Sen2-MTC dataset.
 Due to computational resource limitations and time constraints, we are unable to train, fine-tune or test on other datasets.

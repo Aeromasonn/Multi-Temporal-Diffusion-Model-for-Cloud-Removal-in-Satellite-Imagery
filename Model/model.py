@@ -1,3 +1,8 @@
+# -----------------------------
+# This python file contains all core models,
+# Including: Encoder; Forwarder; Denoiser; Sampler.
+# -----------------------------
+
 import importlib
 import torch
 import torch.nn as nn

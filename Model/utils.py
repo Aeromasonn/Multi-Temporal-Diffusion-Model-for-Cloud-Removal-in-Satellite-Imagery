@@ -1,3 +1,7 @@
+# -----------------------------
+# This python file contains all utility functions.
+# -----------------------------
+
 import matplotlib.pyplot as plt
 import torch
 

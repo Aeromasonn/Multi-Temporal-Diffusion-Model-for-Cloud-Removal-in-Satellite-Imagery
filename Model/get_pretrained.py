@@ -1,3 +1,7 @@
+# -----------------------------
+# This python file provides convenient initialization of the models.
+# The pretrained parameters are consistent with `get_pretrained_large`.
+# -----------------------------
 import torch
 from .model import build_forward_model
 from .utils import count_params
