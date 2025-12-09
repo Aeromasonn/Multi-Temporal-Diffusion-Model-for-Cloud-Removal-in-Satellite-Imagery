@@ -104,5 +104,7 @@ $Improvement = 1 - MAE_{pred\_clean} / MAE_{cloudy\_clean}$
 This show that our diffusion-based cloud removal leads to a **65–67% reduction in DEM height estimation error**, demonstrating that the restored RGB imagery retains substantially more terrain-relevant information than raw cloudy imagery. Since the DEM model is frozen, all improvements come strictly from visual restoration.
 
 **Individual Contributions**
-Sihan Yao:
-Yuxuan Huang
+There is no specific division of labor in terms of the development of the main architecture of our program. The development of the model is collectively done.
+Additionally:
+- Sihan Yao was responsible for the Downstream task.
+- Yuxuan Huang was responsible for maintaining the structure of the repository.

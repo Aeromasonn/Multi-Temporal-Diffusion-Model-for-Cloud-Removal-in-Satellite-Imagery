@@ -56,6 +56,27 @@ Sample directory structure:
     └── Sen2MTC_FULL_3v1_norm.pt
 ```
 
+c) (Optional) Download our generated results (.pt)
+Download `val_all.pt` from:
+https://drive.google.com/file/d/12fUgCDXmBpwqb5x6ghz4yxuyKaMnwjV6/view?usp=drive_link
+Download `test_all.pt` from:
+https://drive.google.com/file/d/1yOuPcjhA8ChHTXVh2PJhb5H_fa8Mz1xH/view?usp=drive_link
+
+These datasets contain precomputed and packed val/test results predicted by our model.
+
+Place them under:
+```
+<YOUR_PROJECT_DIRECTORY>/gen_results
+
+
+Sample directory structure:
+
+<YOUR_PROJECT_DIRECTORY>
+└── gen_gen_results
+    └── test_all.pt
+    └── val_all.pt
+```
+
 4. Essential project layout:
 ```
 <YOUR_PROJECT_DIRECTORY>
