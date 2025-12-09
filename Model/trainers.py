@@ -1,3 +1,10 @@
+# -----------------------------
+# This python file contains the trainer wrapper function.
+# The function performs standard diffusion training.
+# Considering the nature (large epochs, inconsistency between training error and model performance) of diffusion training,
+# validation is not implemented.
+# -----------------------------
+
 import torch.nn.functional as F
 import torch
 from .utils import edm_preconditioning

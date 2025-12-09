@@ -1,3 +1,8 @@
+# -----------------------------
+# This python file contains all Evaluation programs
+# Including metrics calculation, evaluation wrappers (local and pre-computed
+# -----------------------------
+
 import torch
 from tqdm import tqdm
 import torch.nn.functional as F
