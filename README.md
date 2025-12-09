@@ -6,7 +6,7 @@ This downstream task evaluates how well our diffusion-based cloud-removal model 
 **What It Does**  
 Our downstream module measures **DEM height-field recovery** using three DEMs: (1) DEM from cloudy RGB, (2) DEM from our diffusion-cleaned RGB, and (3) DEM from the ground-truth clean RGB, which serves as the **baseline reference** for terrain structure. All RGB inputs are normalized to the $[-1,1]$ range required by the pretrained ImageToDEM U-Net. We then compute MAE between each DEM and the clean baseline DEM. DEM(cloudy) shows how clouds destroy height information, DEM(clean) represents the ideal terrain signal, and DEM(pred) shows how well our diffusion model restores it. Because the DEM generator is frozen, improvements reflect pure gains from cloud removal rather than changes in the DEM model.
 
-![Pipeline Overview](Images/Downstream_Architecure.png)
+![Pipeline Overview](Images/Downstream_Architecture.png)
 
 **Evaluation:**
 
@@ -17,7 +17,7 @@ We evaluate DEM height-field consistency using MAE between DEM(clean → DEM) an
 Lower MAE indicates better terrain accuracy.  
 Improvement is computed as:
 
-$ \text{Improvement} = 1 - \frac{\text{MAE}_{\text{pred→clean}}}{\text{MAE}_{\text{cloudy→clean}}} $
+$\text{Improvement} = 1 - \frac{\text{MAE}_{\text{pred→clean}}}{\text{MAE}_{\text{cloudy→clean}}}$
 
 **Downstream DEM Comparison Table**
 
